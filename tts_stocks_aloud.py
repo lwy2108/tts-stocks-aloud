@@ -12,6 +12,19 @@ from time import sleep
 from sys import exit
 
 
+def name_selection():
+    name = None
+    while True:
+        print('Please enter your name and press enter.')
+        name = input()
+        if name:
+            confirm = input('Confirm (y/n)? ')
+            if confirm == 'y':
+                return name
+            else:
+                continue
+
+
 def stock_selection():
     stock = []
     print('Stock selection: please input symbols, followed by enter after each symbol.')
@@ -52,7 +65,7 @@ def request_prices():
 def speak(message):
     with NamedTemporaryFile() as tf:
         tf.name = 'audio_tf.mp3'
-        audio = gTTS(text=('Stock update: ' + message), lang='en', slow=False)
+        audio = gTTS(text=(name + '! Stock update: ' + message), lang='en', slow=False)
         audio.save(tf.name)
         playsound(tf.name)
         tf.close()
@@ -73,6 +86,8 @@ def status_check():  # to quit on market close
 print('This program will speak your selected stock prices at the chosen interval.')
 
 status_check()  # toggle this for testing outside market hours (valid for 1 iteration)
+
+name = name_selection()
 
 while True:
     stock = stock_selection()
