@@ -3,6 +3,7 @@ tts_stocks_aloud.py: A simple CLI program that speaks aloud selected stock price
 for tickers and interval.
 """
 
+from json import dump
 from tempfile import NamedTemporaryFile
 from yahoo_fin.stock_info import get_live_price, get_market_status  # install yahoo_fin
 from gtts import gTTS  # Google Text-to-Speech, install gtts
@@ -15,8 +16,7 @@ from sys import exit
 def name_selection():
     name = None
     while True:
-        print('Please enter your name and press enter.')
-        name = input()
+        name = input('Please enter your name and press enter: ')
         if name:
             confirm = input('Confirm (y/n)? ')
             if confirm == 'y':
@@ -54,6 +54,11 @@ def wait_selection():
     return wait
 
 
+def backup_config():
+    with open('config.json', 'w') as f:
+        dump(stock, f)  # fix for name, wait
+
+
 def request_prices():
     stock_prices = ''
     for ticker in stock:
@@ -76,7 +81,7 @@ def speak(message):
 def status_check():  # to quit on market close
     status = get_market_status()
     if status != 'REGULAR':
-        status_message = 'Stock update: Market is closed. Exiting now.'
+        status_message = 'Market is closed. Exiting now.'
         global wait
         wait = 1 / 12
         speak(status_message)
@@ -85,14 +90,16 @@ def status_check():  # to quit on market close
 
 print('This program will speak your selected stock prices at the chosen interval.')
 
+name = name_selection()
+
 status_check()  # toggle this for testing outside market hours (valid for 1 iteration)
 
-name = name_selection()
 
 while True:
     stock = stock_selection()
     confirm = confirm_selection()
     if confirm == 'c':
+        backup_config()
         wait = wait_selection()
         while wait:
             stock_prices = request_prices()
